@@ -3,4 +3,4 @@ project(untitled1)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(tema2.cpp)
+add_executable(untitled1 tema2.cpp)
