@@ -2,7 +2,8 @@
 
 class Vector{
 public:
-    int *a, length;
+    int *a;
+    int length;
     char semn;
 public:
     Vector(int len, char s);
@@ -11,8 +12,7 @@ public:
 
     ~Vector();
 
-    void print(std::ostream &os) const {
-        os << semn;
+    virtual void print(std::ostream &os) const {
         for (int i = 0; i <= length - 1; i++)
             os << a[i];
     }
@@ -22,8 +22,8 @@ public:
 
 Vector::Vector(int len, char s) {
     int i;
-    length = len;
     semn = s;
+    length = len;
     a = new int[len];
     for (i = 0; i < len; i++)
         std::cin >> a[i];
@@ -35,7 +35,6 @@ Vector::Vector(Vector const &a2, bool citire) {
         length = a2.length + 1;
         i = 1;
     }
-    semn = a2.semn;
     a = new int[length];
     a[0] = 0;
     for (int k = i; k < a2.length; k++)
@@ -51,10 +50,11 @@ std::ostream &operator<<(std::ostream &os, const Vector &V) {
     return os;
 }
 
-class Nr_Natural_Mare {
+class Nr_Natural_Mare : public Vector {
 protected:
-    Vector A;
+    Vector A = Vector(0, '+');
 public:
+    Nr_Natural_Mare(int len, char s, const Vector &V) : Vector(len, s), A{V, false} {}
     void verification(const Vector &V, const Vector &V2, int k, int i, int len) {
         if (k == i) {
             Vector A(A, true);
@@ -88,7 +88,7 @@ public:
         }
     }
 
-    Vector adunare(int nrcif, const Vector& V, int nrcif2, const Vector& V2) {
+    Nr_Natural_Mare adunare(int nrcif, const Vector& V, int nrcif2, const Vector& V2) {
         int sum, k = nrcif - 1, i = nrcif2 - 1, len;
         if (k > i)
             Vector A(k, '+');
@@ -112,10 +112,10 @@ public:
             len--;
         }
         verification(V, V2, k, i, len);
-        return A;
+        std::cout<< A;
     }
 
-    Vector inmultire(int nrcif, const Vector& V, int nrcif2, const Vector& V2) {
+    Nr_Natural_Mare inmultire(int nrcif, const Vector& V, int nrcif2, const Vector& V2) {
         int mul, k = nrcif, i = nrcif2, len, m, n;
         Vector A(k + i, '+');
         for (m = k - 1; m >= 0; m--) {
@@ -127,15 +127,26 @@ public:
                 len--;
             }
         }
-        return A;
-
+        std::cout<<A;
     }
+    void print (std::ostream &os) const{
+        os<<A.semn;
+        for (int i = 0; i <A.length ; ++i) {
+            os<<A.a[i];
+        }
+    }
+    friend std::ostream &operator <<(std::ostream &os, const Nr_Natural_Mare &V);
 };
+std::ostream &operator <<(std::ostream &os, const Nr_Natural_Mare &V){
+    V.print(os);
+    return os;
+}
 
 class Nr_Intreg_Mare : public Nr_Natural_Mare{
 private:
     Vector B;
 public:
+    Nr_Intreg_Mare(const Vector &V) : Nr_Natural_Mare(0, 0, V), B(V){}
     void calcul(int sum, Vector &V, int &k, int &i, int &len, int operatie) {
         while (i != 0) {
             if (A.a[i] > V.a[k]) {
@@ -150,10 +161,10 @@ public:
         }
     }
 
-    Vector adunarein(int nrcif, Vector V) {
+    Nr_Intreg_Mare adunarein(int nrcif, Vector V) {
         int sum;
         if (((V.semn == '+') && (A.semn == '+')) || ((V.semn == '-') && (A.semn == '-')))
-            return Nr_Natural_Mare::adunare(nrcif, V, A.length, A);
+            Nr_Natural_Mare::adunare(nrcif, V, A.length, A);
         if (((V.semn == '+') && (A.semn == '-')) || ((V.semn == '-') && (A.semn == '+'))) {
             int sum = 0, k = nrcif, i = A.length, len;
 
@@ -188,13 +199,12 @@ public:
                     calcul(sum, V, k, i, len, A.a[k] - V.a[i]);
                 }
             }
-            return B;
+            std::cout<<B;
         }
     }
 
-    Vector inmultirein(int nrcif, const Vector& V) {
-        B = Nr_Natural_Mare::inmultire(nrcif, V, A.length, A);
-        return B;
+    Nr_Intreg_Mare inmultirein(int nrcif, const Vector& V) {
+        Nr_Natural_Mare::inmultire(nrcif, V, A.length, A);
     }
 
 };
@@ -202,22 +212,17 @@ public:
 int main() {
     int n, m, p;
     char semn;
-    Nr_Natural_Mare V1, V2;
-    Nr_Intreg_Mare V3;
     std::cin >> n >> m >> p;
     std::cin >> semn;
     Vector vect(n, '+');
     Vector vect2(m, '+');
     Vector vect3(p, semn);
-
-    V1 = V1.adunare(n, vect, m, vect2);
-    std::cout << "Adunare= " << V1 << std::endl;
-    V2= V2.inmultire(n, vect, m, vect2);
-    std::cout << "Inmultire= " << V2 << std::endl;
-    V3=V3.adunarein(p, vect3);
-    std::cout << "Adunare= " << V3 << std::endl;
-    V3=V3.inmultirein(p, vect3);
-    std::cout << "Inmultire= " << V3;
+    Nr_Natural_Mare V1(0, 0, vect), V2(0, 0, vect2);
+    Nr_Intreg_Mare V3(vect3);
+    V1.adunare(n, vect, m, vect2);
+    V2.inmultire(n, vect, m, vect2);
+    V3.adunarein(p, vect3);
+    V3.inmultirein(p, vect3);
 
     return 0;
 }
